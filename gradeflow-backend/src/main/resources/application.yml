@@ -22,3 +22,10 @@ spring:
 logging:
   level:
     com.gradeflow: DEBUG
+
+
+app:
+  jwt:
+    secret: change-this-secret-in-env-it-must-be-long-enough-for-hs256-please
+    access-token-expiration-ms: 900000
+    refresh-token-expiration-ms: 604800000
