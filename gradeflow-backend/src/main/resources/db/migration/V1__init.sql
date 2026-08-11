@@ -63,3 +63,29 @@ INSERT INTO letter_grade_scale (id, min_score, max_score, letter, gpa_coefficien
                                                                                                    (gen_random_uuid(), 60, 64.99, 'DD', 1.00, TRUE),
                                                                                                    (gen_random_uuid(), 55, 59.99, 'FD', 0.50, FALSE),
                                                                                                    (gen_random_uuid(), 0, 54.99, 'FF', 0.00, FALSE);
+CREATE TABLE email_verification_tokens (
+                                           id UUID PRIMARY KEY,
+                                           token VARCHAR(255) NOT NULL UNIQUE,
+                                           user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                                           expires_at TIMESTAMP NOT NULL,
+                                           used_at TIMESTAMP,
+                                           created_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE password_reset_tokens (
+                                       id UUID PRIMARY KEY,
+                                       token VARCHAR(255) NOT NULL UNIQUE,
+                                       user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                                       expires_at TIMESTAMP NOT NULL,
+                                       used_at TIMESTAMP,
+                                       created_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE refresh_tokens (
+                                id UUID PRIMARY KEY,
+                                token VARCHAR(255) NOT NULL UNIQUE,
+                                user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                                expires_at TIMESTAMP NOT NULL,
+                                revoked BOOLEAN NOT NULL DEFAULT FALSE,
+                                created_at TIMESTAMP NOT NULL
+);
