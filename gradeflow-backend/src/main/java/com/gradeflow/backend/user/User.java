@@ -36,6 +36,11 @@ public class User implements UserDetails {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private UserStatus status = UserStatus.PENDING_VERIFICATION;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -88,6 +93,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return status == UserStatus.ACTIVE;
     }
 }
