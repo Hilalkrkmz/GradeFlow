@@ -2,6 +2,8 @@ package com.gradeflow.backend.course;
 
 import com.gradeflow.backend.course.dto.CourseRequest;
 import com.gradeflow.backend.course.dto.CourseResponse;
+import com.gradeflow.backend.grade.GradeCalculationService;
+import com.gradeflow.backend.grade.GradeSummary;
 import com.gradeflow.backend.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,8 @@ import java.util.UUID;
 public class CourseController {
 
     private final CourseService courseService;
+    private final GradeCalculationService gradeCalculationService;
+
 
     @GetMapping("/api/semesters/{semesterId}/courses")
     public ResponseEntity<List<CourseResponse>> getAll(
@@ -48,5 +52,14 @@ public class CourseController {
     public ResponseEntity<Void> delete(@AuthenticationPrincipal User user, @PathVariable UUID id) {
         courseService.delete(user, id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/api/courses/{id}/grade-summary")
+    public ResponseEntity<GradeSummary> getGradeSummary(
+            @AuthenticationPrincipal User user,
+            @PathVariable UUID id
+    ) {
+        Course course = courseService.findOwnedCourseForCalculation(user, id);
+        return ResponseEntity.ok(gradeCalculationService.calculate(course));
     }
 }

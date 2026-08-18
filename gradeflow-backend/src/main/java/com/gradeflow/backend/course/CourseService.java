@@ -88,4 +88,8 @@ public class CourseService {
                 course.getCourseType()
         );
     }
+
+    public Course findOwnedCourseForCalculation(User user, UUID courseId) {
+        return findOwnedCourse(user, courseId);
+    }
 }
