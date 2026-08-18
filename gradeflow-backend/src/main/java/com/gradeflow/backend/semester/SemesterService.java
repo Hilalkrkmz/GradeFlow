@@ -72,4 +72,8 @@ public class SemesterService {
                 semester.isArchived()
         );
     }
+
+    public Semester findOwnedForCalculation(User user, UUID semesterId) {
+        return findOwned(user, semesterId);
+    }
 }

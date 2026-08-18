@@ -1,5 +1,7 @@
 package com.gradeflow.backend.semester;
 
+import com.gradeflow.backend.gpa.GpaService;
+import com.gradeflow.backend.gpa.GpaSummary;
 import com.gradeflow.backend.semester.dto.SemesterRequest;
 import com.gradeflow.backend.semester.dto.SemesterResponse;
 import com.gradeflow.backend.user.User;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class SemesterController {
 
     private final SemesterService semesterService;
+    private final GpaService gpaService;
 
     @GetMapping
     public ResponseEntity<List<SemesterResponse>> getAll(@AuthenticationPrincipal User user) {
@@ -50,5 +53,11 @@ public class SemesterController {
     @PatchMapping("/{id}/archive")
     public ResponseEntity<SemesterResponse> archive(@AuthenticationPrincipal User user, @PathVariable UUID id) {
         return ResponseEntity.ok(semesterService.setArchived(user, id, true));
+    }
+
+    @GetMapping("/{id}/gpa")
+    public ResponseEntity<GpaSummary> getSemesterGpa(@AuthenticationPrincipal User user, @PathVariable UUID id) {
+        Semester semester = semesterService.findOwnedForCalculation(user, id);
+        return ResponseEntity.ok(gpaService.calculateForSemester(semester));
     }
 }
