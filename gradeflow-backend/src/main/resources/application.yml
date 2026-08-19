@@ -31,3 +31,5 @@ app:
     refresh-token-expiration-ms: 604800000
   verification:
     token-expiration-ms: 86400000
+  password-reset:
+    token-expiration-ms: 1800000

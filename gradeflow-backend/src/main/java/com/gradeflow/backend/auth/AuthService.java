@@ -26,9 +26,14 @@ public class AuthService {
     private final com.gradeflow.backend.security.JwtService jwtService;
     private final com.gradeflow.backend.security.JwtProperties jwtProperties;
     private final AuthenticationManager authenticationManager;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+
 
     @Value("${app.verification.token-expiration-ms}")
     private long verificationTokenExpirationMs;
+
+    @Value("${app.password-reset.token-expiration-ms}")
+    private long passwordResetTokenExpirationMs;
 
     @Transactional
     public MessageResponse register(RegisterRequest request) {
@@ -109,5 +114,60 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
 
         return AuthResponse.of(accessToken, refreshTokenValue);
+    }
+
+    @Transactional
+    public AuthResponse refresh(RefreshRequest request) {
+        RefreshToken storedToken = refreshTokenRepository.findByToken(request.refreshToken())
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        if (storedToken.isRevoked() || storedToken.isExpired()) {
+            throw new RuntimeException("Refresh token expired or revoked, please log in again");
+        }
+
+        User user = storedToken.getUser();
+        storedToken.setRevoked(true);
+        refreshTokenRepository.save(storedToken);
+
+        return issueTokenPair(user);
+    }
+
+    @Transactional
+    public MessageResponse forgotPassword(ForgotPasswordRequest request) {
+        userRepository.findByEmail(request.email()).ifPresent(user -> {
+            String token = UUID.randomUUID().toString();
+            PasswordResetToken resetToken = PasswordResetToken.builder()
+                    .token(token)
+                    .user(user)
+                    .expiresAt(Instant.now().plusMillis(passwordResetTokenExpirationMs))
+                    .build();
+            passwordResetTokenRepository.save(resetToken);
+
+            System.out.println("PASSWORD RESET TOKEN: " + token);
+        });
+
+        return new MessageResponse("If an account with this email exists, a reset link has been sent.");
+    }
+
+    @Transactional
+    public MessageResponse resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.token())
+                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+
+        if (resetToken.isUsed()) {
+            throw new RuntimeException("This reset link has already been used");
+        }
+        if (resetToken.isExpired()) {
+            throw new RuntimeException("This reset link has expired");
+        }
+
+        User user = resetToken.getUser();
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        resetToken.setUsedAt(Instant.now());
+        passwordResetTokenRepository.save(resetToken);
+
+        return new MessageResponse("Password reset successfully. You can now log in with your new password.");
     }
 }

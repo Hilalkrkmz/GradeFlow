@@ -3,7 +3,9 @@ package com.gradeflow.backend.semester;
 import com.gradeflow.backend.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import com.gradeflow.backend.course.Course;
 
+import java.util.List;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -43,6 +45,10 @@ public class Semester {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @OneToMany(mappedBy = "semester", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Course> courses = new java.util.ArrayList<>();
 
     @PrePersist
     void onCreate() {

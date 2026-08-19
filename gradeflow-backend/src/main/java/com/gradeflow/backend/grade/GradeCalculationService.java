@@ -68,8 +68,9 @@ public class GradeCalculationService {
 
         if (isComplete) {
             numericGrade = round2(weightedSum);
+            final double finalNumericGrade = numericGrade;
             LetterGradeScale scale = letterGradeScaleRepository.findAllByOrderByMinScoreDesc().stream()
-                    .filter(s -> numericGrade >= s.getMinScore() && numericGrade <= s.getMaxScore())
+                    .filter(s -> finalNumericGrade >= s.getMinScore() && finalNumericGrade <= s.getMaxScore())
                     .findFirst()
                     .orElse(null);
             if (scale != null) {
