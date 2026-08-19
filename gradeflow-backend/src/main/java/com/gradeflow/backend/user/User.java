@@ -41,6 +41,11 @@ public class User implements UserDetails {
     @Builder.Default
     private UserStatus status = UserStatus.PENDING_VERIFICATION;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "theme_preference")
+    @Builder.Default
+    private ThemePreference themePreference = ThemePreference.LIGHT;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

@@ -30,13 +30,16 @@ public class UserService {
     }
 
     public UserProfileResponse getProfile(User user) {
-        return new UserProfileResponse(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName());
+        return new UserProfileResponse(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(), user.getThemePreference());
     }
 
     @Transactional
     public UserProfileResponse updateProfile(User user, UpdateProfileRequest request) {
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
+        if (request.themePreference() != null) {
+            user.setThemePreference(request.themePreference());
+        }
         userRepository.save(user);
         return getProfile(user);
     }

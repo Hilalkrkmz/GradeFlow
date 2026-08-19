@@ -90,3 +90,5 @@ CREATE TABLE refresh_tokens (
                                 revoked BOOLEAN NOT NULL DEFAULT FALSE,
                                 created_at TIMESTAMP NOT NULL
 );
+
+theme_preference VARCHAR(10) NOT NULL DEFAULT 'LIGHT',
