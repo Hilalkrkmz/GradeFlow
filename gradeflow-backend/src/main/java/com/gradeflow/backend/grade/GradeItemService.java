@@ -8,6 +8,7 @@ import com.gradeflow.backend.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.gradeflow.backend.common.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -58,7 +59,7 @@ public class GradeItemService {
         GradeItem item = gradeItemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Grade item not found"));
         if (!item.getCourse().getSemester().getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Grade item not found");
+            throw new ResourceNotFoundException("Grade item not found");
         }
         return item;
     }
@@ -67,7 +68,7 @@ public class GradeItemService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         if (!course.getSemester().getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Course not found");
+            throw new ResourceNotFoundException("Course not found");
         }
         return course;
     }

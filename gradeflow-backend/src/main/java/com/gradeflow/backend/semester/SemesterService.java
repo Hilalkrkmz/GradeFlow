@@ -6,6 +6,7 @@ import com.gradeflow.backend.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.gradeflow.backend.common.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +57,7 @@ public class SemesterService {
 
     private Semester findOwned(User user, UUID semesterId) {
         Semester semester = semesterRepository.findById(semesterId)
-                .orElseThrow(() -> new RuntimeException("Semester not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Semester not found"));
         if (!semester.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Semester not found");
         }

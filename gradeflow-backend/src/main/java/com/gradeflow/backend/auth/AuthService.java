@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.gradeflow.backend.common.exception.*;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -38,7 +39,7 @@ public class AuthService {
     @Transactional
     public MessageResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new RuntimeException("Email already exists");
+            throw new EmailAlreadyExistsException("An account with this email already exists");
         }
 
         User user = User.builder()
@@ -67,13 +68,13 @@ public class AuthService {
     @Transactional
     public MessageResponse verifyEmail(String token) {
         EmailVerificationToken verificationToken = verificationTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid verification token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid verification token"));
 
         if (verificationToken.isUsed()) {
-            throw new RuntimeException("This verification link has already been used");
+            throw new InvalidTokenException("This verification link has already been used");
         }
         if (verificationToken.isExpired()) {
-            throw new RuntimeException("This verification link has expired");
+            throw new InvalidTokenException("This verification link has expired");
         }
 
         User user = verificationToken.getUser();
@@ -89,10 +90,10 @@ public class AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new  BadRequestException("Invalid email or password"));
 
         if (user.getStatus() == UserStatus.PENDING_VERIFICATION) {
-            throw new RuntimeException("Please verify your email before logging in");
+            throw new BadRequestException("Please verify your email before logging in");
         }
 
         authenticationManager.authenticate(
@@ -119,10 +120,10 @@ public class AuthService {
     @Transactional
     public AuthResponse refresh(RefreshRequest request) {
         RefreshToken storedToken = refreshTokenRepository.findByToken(request.refreshToken())
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
         if (storedToken.isRevoked() || storedToken.isExpired()) {
-            throw new RuntimeException("Refresh token expired or revoked, please log in again");
+            throw new InvalidTokenException("Refresh token expired or revoked, please log in again");
         }
 
         User user = storedToken.getUser();
@@ -152,13 +153,13 @@ public class AuthService {
     @Transactional
     public MessageResponse resetPassword(ResetPasswordRequest request) {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.token())
-                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
 
         if (resetToken.isUsed()) {
-            throw new RuntimeException("This reset link has already been used");
+            throw new InvalidTokenException("This reset link has already been used");
         }
         if (resetToken.isExpired()) {
-            throw new RuntimeException("This reset link has expired");
+            throw new InvalidTokenException("This reset link has expired");
         }
 
         User user = resetToken.getUser();
